@@ -7,6 +7,10 @@ import win32gui, win32ui, win32con, win32api
 from PIL import ImageGrab,Image
 import math,operator
 from functools import reduce
+import threading
+from multiprocessing import Process,Manager
+import functools
+
 
 class Point(object):
     def __init__(self,x,y):
@@ -18,7 +22,6 @@ class Tube(object):
         self.s_point = s_point
         self.e_point = e_point
         self.value = value
-        self.click_point = Point((self.s_point.x + self.e_point.x)/2,(self.s_point.y + self.e_point.y)/2)
 
 class PictureValue(object):
     def __init__(self,img,val):
@@ -33,11 +36,28 @@ bg = PictureValue(Image.open('./bg/bg.jpg'),currentValue)
 currentValue += 1
 imageValue.append(bg)
 
+
+#装饰器
+def log(text):
+    def decoretor(func):
+        @functools.wraps(func)
+        def wrapper(*args,**kw):
+            start = datetime.now()
+            c = func(*args,**kw)
+            print("%s ran in %s" % (func.__name__,datetime.now()-start))
+            return c
+        return wrapper
+    return decoretor
+
+
 #图片相似度begin
-def make_regalur_image(img, size = (256, 256)):
+
+#primary  256*256
+def make_regalur_image(img, size = (128, 128)):
 	return img.resize(size).convert('RGB')
 
-def split_image(img, part_size = (64, 64)):
+#primary  64*64
+def split_image(img, part_size = (32, 32)):
 	w, h = img.size
 	pw, ph = part_size
 #	assert w % pw == h % ph == 0
@@ -74,8 +94,36 @@ def getValue(img):
     currentValue += 1
     imageValue.append(newImage)
     return newImage.val
-#图片相似度end
 
+#差值感知算法
+def dHash(img):
+    #缩放8*8
+    img=cv2.resize(img,(9,8),interpolation=cv2.INTER_CUBIC)
+    #转换灰度图
+    gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    hash_str=''
+    #每行前一个像素大于后一个像素为1，相反为0，生成哈希
+    for i in range(8):
+        for j in range(8):
+            if   gray[i,j]>gray[i,j+1]:
+                hash_str=hash_str+'1'
+            else:
+                hash_str=hash_str+'0'
+    return hash_str
+
+#Hash值对比
+def cmpHash(hash1,hash2):
+    n=0
+    #hash长度不同则返回-1代表传参出错
+    if len(hash1)!=len(hash2):
+        return -1
+    #遍历判断
+    for i in range(len(hash1)):
+        #不相等则n计数+1，n最终为相似度
+        if hash1[i]!=hash2[i]:
+            n=n+1
+    return n
+#图片相似度end
 
 
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
@@ -109,19 +157,68 @@ def getValue(img):
 # img2 = Image.open('./cut/0-11.jpg')
 
 
-start = datetime.now()
+
+
+# d = {}
+# lock = threading.Lock()
+# def subGetValue(i):
+#     line = []
+#     for j in range(19):
+#         lock.acquire()
+#         try:
+#             img = Image.open('./cut/%s-%s.jpg' % (i,j))
+#             line.append(getValue(img))
+#         finally:
+#             lock.release()
+#     d[i] = line;
+
+
+
+
+
+
 test = []
+start = datetime.now()
+
+
 for i in range(11):
     line = []
     for j in range(19):
         img = Image.open('./cut/%s-%s.jpg' % (i,j))
         line.append(getValue(img))
+    print(line)
     test.append(line)
 
-for a in test:
-    print(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18])
+
+# for i in range(11):
+#     t = threading.Thread(target=subGetValue,name=("task%s" % i),args=(i,))
+#     t.setDaemon(True)
+#     t.start()
+#     t.join()
+# print(d)
+
+
+
+
 print(datetime.now() - start)
 
 
+# def f(d,key,val):
+#     d[key] = val
+#     print(datetime.now())
+#     print(d)
+
+# if __name__ == '__main__':
+#     with Manager() as manager:
+#         d = manager.dict()
+#         p_list = []
+#         for i in range(10):
+#             p = Process(target=f,args=(d,i,i))
+#             p.start()
+#             p_list.append(p)
+#         for res in p_list:
+#             res.join()
+
+#         print(d)
 
 #print(calc_similar_by_obj(Image.open('./cut/0-0.jpg'),Image.open('./bg/bg.jpg')))
