@@ -19,15 +19,15 @@ class Point(object):
         self.x = x
         self.y = y
 
-#方块:起始坐标,终点坐标,点击坐标,值
+#方块:起始坐标,终点坐标,点击坐标,列数,行数,值
 class Tube(object):
-    def __init__(self,s_point,e_point,m_point,value=0):
+    def __init__(self,s_point,e_point,m_point,x,y,value=0):
         self.s_point = s_point
         self.e_point = e_point
         self.click_point = m_point
         self.value = value
     def __str__(self):
-        return 'start:%s,%s----end:%s,%s----click:%s,%s----value:%s' % (self.s_point.x,self.s_point.y,self.e_point.x,self.e_point.y,self.click_point.x,self.click_point.y,self.value)
+        return 'start:%s,%s----end:%s,%s----click:%s,%s----(x,y):(%s,%s)----value:%s' % (self.s_point.x,self.s_point.y,self.e_point.x,self.e_point.y,self.click_point.x,self.click_point.y,self.x,self.y,self.value)
 
 #值与图片配对,用于将游戏区转换为数组
 class PictureValue(object):
@@ -138,6 +138,58 @@ def getMidPoint(p1,p2):
     y = (p1.y + p2.y) / 2
     return Point(x,y)
 
+#是否在同一行
+def inOneLine(t1,t2):
+    return t1.x == t2.x
+
+#是否在同一列
+def inOneColumn(t1,t2):
+    return t1.y == t2.y
+
+#一行都为空[y1,y2]
+def lineEmpty(m,y1,y2,x):
+    empty = True
+    for i in range(y1,y2+1):
+        if m[x][i].value != 0:
+            return False
+    return empty
+
+#一列都为空[x1,x2]
+def columnEmpty(m,x1,x2,y):
+    empty = True
+    for i in range(x1,x2+1):
+        if m[i][y].value != 0:
+            return False
+    return empty
+
+#判断是否可消除;
+#t1偏左上角,t2偏右下角
+def canLink(m,x1,y1,x2,y2):
+    t1 = m[x1][y1]
+    t2 = m[x2][y2]
+    if inOneLine(t1,t2) or inOneColumn(t1,t2):
+        #相邻
+        if(t2.x - t1.x == 1 or t2.y - t1.y == 1):
+            return True
+        else:
+            #判断能否直连
+            straight = True
+            #计算中间格子是否都为空
+            if inOneLine(t1,t2):
+                for i in range(t1.y + 1,t2.y - 1):
+                    if m[x1][i].value != 0:
+                        straight = False
+            elif inOneColumn(t1,t2):
+                for i in range(t1.x + 1,t2.x - 1):
+                    if m[i][y1].value != 0:
+                        straight = False
+            #中间格子都为空,能直连,返回True,否则继续
+            if straight:
+                return True
+            else:
+                pass
+
+
 
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
 # #返回(x1,y1,x2,y2)
@@ -189,19 +241,16 @@ for i in range(11):
         e_py = (start_point.y + tube_height) + i * tube_height;
         s_point = Point(s_px,s_py)
         e_point = Point(e_px,e_py)
-        tube = Tube(s_point,e_point,getMidPoint(s_point,e_point),value)
+        tube = Tube(s_point,e_point,getMidPoint(s_point,e_point),i,j,value)
         # print(tube)
         line.append(tube)
     print('')
     gameMap.append(line)
 
 
-# for i in range(11):
-#     t = threading.Thread(target=subGetValue,name=("task%s" % i),args=(i,))
-#     t.setDaemon(True)
-#     t.start()
-#     t.join()
-# print(d)
+
+
+
 
 
 
