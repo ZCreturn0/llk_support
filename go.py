@@ -176,9 +176,9 @@ def canLink(m,x1,y1,x2,y2):
             straight = True
             #计算中间格子是否都为空
             if inOneLine(t1,t2):
-                straight = lineEmpty(m,y1,y2,x1)
+                straight = lineEmpty(m,y1+1,y2,x1)
             elif inOneColumn(t1,t2):
-                straight = columnEmpty(m,x1,x2,y1)
+                straight = columnEmpty(m,x1+1,x2,y1)
             #中间格子都为空,能直连,返回True,否则继续
             if straight:
                 return True
@@ -214,8 +214,8 @@ def canLink(m,x1,y1,x2,y2):
                             break
                         cur += 1
                 return False
-
-
+    else:
+        pass
 
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
 # #返回(x1,y1,x2,y2)
