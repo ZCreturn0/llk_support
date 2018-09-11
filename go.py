@@ -146,18 +146,18 @@ def inOneLine(t1,t2):
 def inOneColumn(t1,t2):
     return t1.y == t2.y
 
-#一行都为空[y1,y2]
+#一行都为空[y1,y2)
 def lineEmpty(m,y1,y2,x):
     empty = True
-    for i in range(y1,y2+1):
+    for i in range(y1,y2):
         if m[x][i].value != 0:
             return False
     return empty
 
-#一列都为空[x1,x2]
+#一列都为空[x1,x2)
 def columnEmpty(m,x1,x2,y):
     empty = True
-    for i in range(x1,x2+1):
+    for i in range(x1,x2):
         if m[i][y].value != 0:
             return False
     return empty
@@ -176,18 +176,44 @@ def canLink(m,x1,y1,x2,y2):
             straight = True
             #计算中间格子是否都为空
             if inOneLine(t1,t2):
-                for i in range(t1.y + 1,t2.y - 1):
-                    if m[x1][i].value != 0:
-                        straight = False
+                straight = lineEmpty(m,y1,y2,x1)
             elif inOneColumn(t1,t2):
-                for i in range(t1.x + 1,t2.x - 1):
-                    if m[i][y1].value != 0:
-                        straight = False
+                straight = columnEmpty(m,x1,x2,y1)
             #中间格子都为空,能直连,返回True,否则继续
             if straight:
                 return True
             else:
-                pass
+                if inOneLine(t1,t2):
+                    cur = x1 - 1
+                    while cur >= 0:
+                        if columnEmpty(m,cur,x1,y1) and columnEmpty(m,cur,x2,y2) and lineEmpty(m,y1+1,y2,cur):
+                            return True
+                        elif not columnEmpty(m,cur,x1,y1) or not columnEmpty(m,cur,x2,y2):
+                            break
+                        cur -= 1
+                    cur = x1 + 1
+                    while cur <= 10:
+                        if columnEmpty(m,x1+1,cur+1,y1) and columnEmpty(m,x2+1,cur+1,y2) and lineEmpty(m,y1+1,y2,cur):
+                            return True
+                        elif not columnEmpty(m,x1+1,cur+1,y1) or not columnEmpty(m,x2+1,cur+1,y2):
+                            break
+                        cur += 1
+                elif inOneColumn(t1,t2):
+                    cur = y1 - 1
+                    while cur >= 0:
+                        if lineEmpty(m,cur,y1,x1) and lineEmpty(m,cur,y2,x2) and columnEmpty(m,x1+1,x2,cur):
+                            return True
+                        elif not lineEmpty(m,cur,y1,x1) or not lineEmpty(m,cur,y2,x2):
+                            break
+                        cur -= 1
+                    cur = x1 + 1
+                    while cur <= 10:
+                        if lineEmpty(m,y1+1,cur+1,x1) and lineEmpty(m,y2+1,cur+1,x2) and columnEmpty(m,x1+1,x2,cur):
+                            return True
+                        elif not lineEmpty(m,y1+1,cur+1,x1) or not lineEmpty(m,y2+1,cur+1,x2):
+                            break
+                        cur += 1
+                return False
 
 
 
