@@ -2,27 +2,34 @@
 # -*- coding: utf-8 -*-
 
 import time
-from datetime import datetime
-import win32gui, win32ui, win32con, win32api
-from PIL import ImageGrab,Image
-import math,operator
-from functools import reduce
 import threading
-from multiprocessing import Process,Manager
 import functools
+import math,operator
+import win32gui, win32ui, win32con, win32api
+
+from functools import reduce
+from datetime import datetime
+from PIL import ImageGrab,Image
+from multiprocessing import Process,Manager
 
 
+#坐标点
 class Point(object):
     def __init__(self,x,y):
         self.x = x
         self.y = y
 
+#方块:起始坐标,终点坐标,点击坐标,值
 class Tube(object):
-    def __init__(self,s_point,e_point,value=0):
+    def __init__(self,s_point,e_point,m_point,value=0):
         self.s_point = s_point
         self.e_point = e_point
+        self.click_point = m_point
         self.value = value
+    def __str__(self):
+        return 'start:%s,%s----end:%s,%s----click:%s,%s----value:%s' % (self.s_point.x,self.s_point.y,self.e_point.x,self.e_point.y,self.click_point.x,self.click_point.y,self.value)
 
+#值与图片配对,用于将游戏区转换为数组
 class PictureValue(object):
     def __init__(self,img,val):
         self.img = img
@@ -37,7 +44,7 @@ currentValue += 1
 imageValue.append(bg)
 
 
-#装饰器
+#装饰器,打印执行时长
 def log(text):
     def decoretor(func):
         @functools.wraps(func)
@@ -125,17 +132,23 @@ def cmpHash(hash1,hash2):
     return n
 #图片相似度end
 
+#获取中值坐标
+def getMidPoint(p1,p2):
+    x = (p1.x + p2.x) / 2
+    y = (p1.y + p2.y) / 2
+    return Point(x,y)
+
 
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
 # #返回(x1,y1,x2,y2)
 # p = win32gui.GetWindowRect(hwnd)
 # print(p)
 
-# #游戏起始坐标
-# start_point = Point(14,181)
-# #方块宽高
-# tube_width = 31
-# tube_height = 35
+#游戏起始坐标
+start_point = Point(14,181)
+#方块宽高
+tube_width = 31
+tube_height = 35
 
 # #对游戏窗口进行截图
 # im = ImageGrab.grab(p)
@@ -153,41 +166,34 @@ def cmpHash(hash1,hash2):
 #         #保存为     "行数-列数.jpg"
 #         cropedIm.save('.\/cut\/%s-%s.jpg' % (i,j))
 
-# img1 = Image.open('./cut/0-8.jpg')
-# img2 = Image.open('./cut/0-11.jpg')
 
 
 
-
-# d = {}
-# lock = threading.Lock()
-# def subGetValue(i):
-#     line = []
-#     for j in range(19):
-#         lock.acquire()
-#         try:
-#             img = Image.open('./cut/%s-%s.jpg' % (i,j))
-#             line.append(getValue(img))
-#         finally:
-#             lock.release()
-#     d[i] = line;
-
-
-
-
-
-
-test = []
+gameMap = []
 start = datetime.now()
 
 
 for i in range(11):
+    values = []
     line = []
     for j in range(19):
         img = Image.open('./cut/%s-%s.jpg' % (i,j))
-        line.append(getValue(img))
-    print(line)
-    test.append(line)
+        value = getValue(img)
+        values.append(value)
+        print('%-2s' % (value),end="  ")
+        #起始坐标
+        s_px = start_point.x + j * tube_width;
+        s_py = start_point.y + i * tube_height;
+        #终止坐标
+        e_px = (start_point.x + tube_width) + j * tube_width;
+        e_py = (start_point.y + tube_height) + i * tube_height;
+        s_point = Point(s_px,s_py)
+        e_point = Point(e_px,e_py)
+        tube = Tube(s_point,e_point,getMidPoint(s_point,e_point),value)
+        # print(tube)
+        line.append(tube)
+    print('')
+    gameMap.append(line)
 
 
 # for i in range(11):
@@ -200,7 +206,7 @@ for i in range(11):
 
 
 
-print(datetime.now() - start)
+print('Transform map in %s s' % (datetime.now() - start))
 
 
 # def f(d,key,val):
