@@ -24,6 +24,8 @@ class Tube(object):
     def __init__(self,s_point,e_point,m_point,x,y,value=0):
         self.s_point = s_point
         self.e_point = e_point
+        self.x = x
+        self.y = y
         self.click_point = m_point
         self.value = value
     def __str__(self):
@@ -517,7 +519,7 @@ for i in range(11):
         img = Image.open('./cut/%s-%s.jpg' % (i,j))
         value = getValue(img)
         values.append(value)
-        print('%-2s' % (value),end="  ")
+        print('%2s' % (value),end="  ")
         #起始坐标
         s_px = start_point.x + j * tube_width;
         s_py = start_point.y + i * tube_height;
@@ -532,33 +534,12 @@ for i in range(11):
     print('')
     gameMap.append(line)
 
-
-
-
-
-
-
-
-
 print('Transform map in %s s' % (datetime.now() - start))
 
 
-# def f(d,key,val):
-#     d[key] = val
-#     print(datetime.now())
-#     print(d)
+# for line1 in gameMap:
+#     for item1 in line1:
+#         for 
 
-# if __name__ == '__main__':
-#     with Manager() as manager:
-#         d = manager.dict()
-#         p_list = []
-#         for i in range(10):
-#             p = Process(target=f,args=(d,i,i))
-#             p.start()
-#             p_list.append(p)
-#         for res in p_list:
-#             res.join()
-
-#         print(d)
 
 #print(calc_similar_by_obj(Image.open('./cut/0-0.jpg'),Image.open('./bg/bg.jpg')))
