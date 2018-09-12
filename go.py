@@ -232,7 +232,7 @@ def canLink(m,x1,y1,x2,y2):
             # *
             # ************★
             #
-            if (lineEmpty(m,y1+1,y2,x1) and columnEmpty(m,x1,x2,y2)) or (columnEmpty(m,x1+1,x2,y1) and lineEmpty(m,y1+1,y2,x2)):
+            if (lineEmpty(m,y1+1,y2,x1) and columnEmpty(m,x1,x2,y2)) or (columnEmpty(m,x1+1,x2,y1) and lineEmpty(m,y1,y2,x2)):
                 return True
             else:
                 #三条线相连
@@ -244,7 +244,9 @@ def canLink(m,x1,y1,x2,y2):
                 #             *
                 #             ★     
                 for i in range(x1+1,x2):
-                    if columnEmpty(m,x1+1,i+1,y1) and lineEmpty(m,y1,y2,i) and columnEmpty(m,i,x2,y2):
+                    if not columnEmpty(m,x1+1,i+1,y1):
+                        break
+                    elif lineEmpty(m,y1,y2,i) and columnEmpty(m,i,x2,y2):
                         return True
                 #右->下->右
                 #
@@ -254,7 +256,9 @@ def canLink(m,x1,y1,x2,y2):
                 #         *    
                 #         ******★ 
                 for i in range(y1+1,y2):
-                    if lineEmpty(m,y1+1,i+1,x1) and columnEmpty(m,x1,x2,i) and lineEmpty(m,i,y2,x2):
+                    if not lineEmpty(m,y1+1,i+1,x1):
+                        break
+                    elif columnEmpty(m,x1,x2,i) and lineEmpty(m,i,y2,x2):
                         return True
                 #上->右->下
                 #
@@ -268,7 +272,7 @@ def canLink(m,x1,y1,x2,y2):
                 while toTop >= 0:
                     if (not columnEmpty(m,toTop,x1,y1)) or (not columnEmpty(m,toTop,x2,y2)):
                         break
-                    if columnEmpty(m,toTop,x1,y1) and lineEmpty(m,y1,y2,toTop) and columnEmpty(m,toTop,x2,y2):
+                    elif lineEmpty(m,y1,y2,toTop):
                         return True
                     toTop -= 1
                 #下->右->上
@@ -283,7 +287,7 @@ def canLink(m,x1,y1,x2,y2):
                 while toBottom <=10:
                     if (not columnEmpty(m,x1,toBottom,y1) or not columnEmpty(m,x2,toBottom,y2)):
                         break
-                    if columnEmpty(m,x1,toBottom,y1) and lineEmpty(m,y1,y2,toBottom) and columnEmpty(m,x2,toBottom,y2):
+                    elif lineEmpty(m,y1,y2,toBottom):
                         return True
                     toBottom += 1
                 #右->下->左
@@ -298,7 +302,7 @@ def canLink(m,x1,y1,x2,y2):
                 while toRight <= 18:
                     if (not lineEmpty(m,y1+1,toRight+1,x1)) or (not lineEmpty(m,y2+1,toRight+1,x2)):
                         break
-                    if lineEmpty(m,y1+1,toRight+1,x1) and columnEmpty(m,x1,x2,toRight) and lineEmpty(m,y2+1,toRight+1,x2):
+                    elif columnEmpty(m,x1,x2,toRight):
                         return True
                     toRight += 1
                 #左->下->右
@@ -312,9 +316,39 @@ def canLink(m,x1,y1,x2,y2):
                 while toLeft >= 0:
                     if (not lineEmpty(m,toLeft,y1,x1)) or (not lineEmpty(m,toLeft,y2,x2)):
                         break
-                    if lineEmpty(m,toLeft,y1,x1) and columnEmpty(m,x1,x2,toLeft) and lineEmpty(m,toLeft,y2,x2):
+                    elif columnEmpty(m,x1,x2,toLeft):
                         return True
                     toLeft -= 1
+        #t1下,t2上
+        elif t1.x > t2.x:
+            #判断两条线相连
+            #
+            #             ★
+            #             *
+            #             *
+            #             *
+            # ★************
+            #
+            # ************★
+            # *
+            # *
+            # *
+            # ★
+            #
+            if (lineEmpty(m,y1+1,y2,x1) and columnEmpty(m,x2+1,x1+1,y2)) or (columnEmpty(m,x1+1,x2,y1) and lineEmpty(m,y1,y2,x2)):
+                return True
+            else:
+                #三线相连
+                #上->右->上
+                #
+                #              ★
+                #              *
+                # **************
+                # *
+                # ★
+                #
+                for i in range(x2+1,x1):
+                    pass
 
             
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
