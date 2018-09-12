@@ -215,8 +215,108 @@ def canLink(m,x1,y1,x2,y2):
                         cur += 1
                 return False
     else:
-        pass
+        #不在同一条线上,t1偏左,t2偏右
+        #t1上,t2下
+        if t1.x < t2.x:
+            #判断两条线相连
+            #
+            # ★************
+            #             *
+            #             *
+            #             *
+            #             ★
+            #
+            # ★
+            # *
+            # *
+            # *
+            # ************★
+            #
+            if (lineEmpty(m,y1+1,y2,x1) and columnEmpty(m,x1,x2,y2)) or (columnEmpty(m,x1+1,x2,y1) and lineEmpty(m,y1+1,y2,x2)):
+                return True
+            else:
+                #三条线相连
+                #下->右->下
+                #
+                #   ★
+                #   *
+                #   ***********
+                #             *
+                #             ★     
+                for i in range(x1+1,x2):
+                    if columnEmpty(m,x1+1,i+1,y1) and lineEmpty(m,y1,y2,i) and columnEmpty(m,i,x2,y2):
+                        return True
+                #右->下->右
+                #
+                #    ★*****
+                #         *
+                #         *   
+                #         *    
+                #         ******★ 
+                for i in range(y1+1,y2):
+                    if lineEmpty(m,y1+1,i+1,x1) and columnEmpty(m,x1,x2,i) and lineEmpty(m,i,y2,x2):
+                        return True
+                #上->右->下
+                #
+                #   **********
+                #   *        *
+                #   ★       *
+                #            * 
+                #            *
+                #            ★ 
+                toTop = x1-1
+                while toTop >= 0:
+                    if (not columnEmpty(m,toTop,x1,y1)) or (not columnEmpty(m,toTop,x2,y2)):
+                        break
+                    if columnEmpty(m,toTop,x1,y1) and lineEmpty(m,y1,y2,toTop) and columnEmpty(m,toTop,x2,y2):
+                        return True
+                    toTop -= 1
+                #下->右->上
+                #
+                #             ★
+                #             *
+                #   ★        *
+                #   *         *
+                #   *         *
+                #   ***********
+                toBottom = x2+1
+                while toBottom <=10:
+                    if (not columnEmpty(m,x1,toBottom,y1) or not columnEmpty(m,x2,toBottom,y2)):
+                        break
+                    if columnEmpty(m,x1,toBottom,y1) and lineEmpty(m,y1,y2,toBottom) and columnEmpty(m,x2,toBottom,y2):
+                        return True
+                    toBottom += 1
+                #右->下->左
+                #                
+                # ★********************
+                #                     *
+                #                     *
+                #                     *
+                #             ★*******  
+                #
+                toRight = y2 + 1
+                while toRight <= 18:
+                    if (not lineEmpty(m,y1+1,toRight+1,x1)) or (not lineEmpty(m,y2+1,toRight+1,x2)):
+                        break
+                    if lineEmpty(m,y1+1,toRight+1,x1) and columnEmpty(m,x1,x2,toRight) and lineEmpty(m,y2+1,toRight+1,x2):
+                        return True
+                    toRight += 1
+                #左->下->右
+                #
+                # ********★
+                # *
+                # *
+                # ******************★
+                #
+                toLeft = y1 - 1
+                while toLeft >= 0:
+                    if (not lineEmpty(m,toLeft,y1,x1)) or (not lineEmpty(m,toLeft,y2,x2)):
+                        break
+                    if lineEmpty(m,toLeft,y1,x1) and columnEmpty(m,x1,x2,toLeft) and lineEmpty(m,toLeft,y2,x2):
+                        return True
+                    toLeft -= 1
 
+            
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
 # #返回(x1,y1,x2,y2)
 # p = win32gui.GetWindowRect(hwnd)
