@@ -197,7 +197,7 @@ def canLink(m,x1,y1,x2,y2):
                     while cur > 0:
                         if (not columnEmpty(m,cur,x1,y1)) or (not columnEmpty(m,cur,x2,y2)):
                             break
-                        elif lineEmpty(m,y1+1,y2,cur):
+                        elif lineEmpty(m,y1,y2+1,cur):
                             return True
                         cur -= 1
                     #下->右->上
@@ -211,31 +211,52 @@ def canLink(m,x1,y1,x2,y2):
                     #
                     cur = x1 + 1
                     while cur < 10:
-                        if columnEmpty(m,x1+1,cur+1,y1) and columnEmpty(m,x2+1,cur+1,y2) and lineEmpty(m,y1+1,y2,cur):
-                            return True
-                        elif not columnEmpty(m,x1+1,cur+1,y1) or not columnEmpty(m,x2+1,cur+1,y2):
+                        if (not columnEmpty(m,x1+1,cur+1,y1)) or (not columnEmpty(m,x2+1,cur+1,y2)):
                             break
+                        elif lineEmpty(m,y1,y2+1,cur):
+                            return True
                         cur += 1
                 elif inOneColumn(t1,t2):
+                    #左->下->右
+                    #
+                    # ************★
+                    # *
+                    # *
+                    # ************★
+                    #
                     cur = y1 - 1
-                    while cur >= 0:
-                        if lineEmpty(m,cur,y1,x1) and lineEmpty(m,cur,y2,x2) and columnEmpty(m,x1+1,x2,cur):
-                            return True
-                        elif not lineEmpty(m,cur,y1,x1) or not lineEmpty(m,cur,y2,x2):
+                    while cur > 0:
+                        if (not lineEmpty(m,cur,y1,x1)) or (not lineEmpty(m,cur,y2,x2)):
                             break
+                        elif columnEmpty(m,x1,x2+1,cur):
+                            return True
                         cur -= 1
-                    cur = x1 + 1
-                    while cur <= 10:
-                        if lineEmpty(m,y1+1,cur+1,x1) and lineEmpty(m,y2+1,cur+1,x2) and columnEmpty(m,x1+1,x2,cur):
-                            return True
-                        elif not lineEmpty(m,y1+1,cur+1,x1) or not lineEmpty(m,y2+1,cur+1,x2):
+                    #右->下->左
+                    #
+                    # ★*****************
+                    #                   *
+                    #                   *
+                    #                   *
+                    # ★*****************
+                    #
+                    cur = y1 + 1
+                    while cur < 10:
+                        if (not lineEmpty(m,y1+1,cur+1,x1)) or (not lineEmpty(m,y2+1,cur+1,x2)):
                             break
+                        elif columnEmpty(m,x1,x2+1,cur):
+                            return True
                         cur += 1
                 return False
     else:
         #不在同一条线上,t1偏左,t2偏右
+        #
+        #   ★(t1)
+        #
+        #
+        #                 ★(t2)
+        #
         #t1左,t2右
-        if t1.x < t2.x:
+        if t1.y < t2.y:
             #判断两条线相连
             #
             # ★************
@@ -287,7 +308,7 @@ def canLink(m,x1,y1,x2,y2):
                 #            *
                 #            ★ 
                 toTop = x1-1
-                while toTop >= 0:
+                while toTop > 0:
                     if (not columnEmpty(m,toTop,x1,y1)) or (not columnEmpty(m,toTop,x2,y2)):
                         break
                     elif lineEmpty(m,y1,y2,toTop):
@@ -295,15 +316,15 @@ def canLink(m,x1,y1,x2,y2):
                     toTop -= 1
                 #下->右->上
                 #
-                #             ★
-                #             *
-                #   ★        *
+                #   ★          
+                #   *          
+                #   *         ★
                 #   *         *
                 #   *         *
                 #   ***********
                 toBottom = x2+1
-                while toBottom <=10:
-                    if (not columnEmpty(m,x1,toBottom,y1) or not columnEmpty(m,x2,toBottom,y2)):
+                while toBottom < 10:
+                    if (not columnEmpty(m,x1+1,toBottom+1,y1) or not columnEmpty(m,x2+1,toBottom+1,y2)):
                         break
                     elif lineEmpty(m,y1,y2,toBottom):
                         return True
@@ -317,7 +338,7 @@ def canLink(m,x1,y1,x2,y2):
                 #             ★*******  
                 #
                 toRight = y2 + 1
-                while toRight <= 18:
+                while toRight < 18:
                     if (not lineEmpty(m,y1+1,toRight+1,x1)) or (not lineEmpty(m,y2+1,toRight+1,x2)):
                         break
                     elif columnEmpty(m,x1,x2,toRight):
@@ -331,14 +352,21 @@ def canLink(m,x1,y1,x2,y2):
                 # ******************★
                 #
                 toLeft = y1 - 1
-                while toLeft >= 0:
+                while toLeft > 0:
                     if (not lineEmpty(m,toLeft,y1,x1)) or (not lineEmpty(m,toLeft,y2,x2)):
                         break
                     elif columnEmpty(m,x1,x2,toLeft):
                         return True
                     toLeft -= 1
+        #不在同一条线上,t1偏右,t2偏左
+        #
+        #               ★(t1)
+        #
+        #
+        #   ★(t2)
+        #
         #t1右,t2左
-        elif t1.x > t2.x:
+        elif t1.y > t2.y:
             #判断两条线相连
             #
             #             ★
@@ -394,7 +422,7 @@ def canLink(m,x1,y1,x2,y2):
                 # ★
                 #
                 toTop = x1-1
-                while toTop >= 0:
+                while toTop > 0:
                     if (not columnEmpty(m,toTop,x1,y1)) or (not columnEmpty(m,toTop,x2,y2)):
                         break
                     elif lineEmpty(m,y2,y1+1,toTop):
@@ -411,7 +439,7 @@ def canLink(m,x1,y1,x2,y2):
                 #    **********   
                 #       
                 toBottom = X2 - 1
-                while toBottom <= 10:
+                while toBottom < 10:
                     if (not columnEmpty(m,x2+1,toBottom+1,y2)) or (not columnEmpty(m,x1+1,toBottom+1,y1)):
                         break
                     elif lineEmpty(m,y2,y1+1,toBottom):
@@ -425,7 +453,7 @@ def canLink(m,x1,y1,x2,y2):
                 # *****★
                 #
                 toLeft = y2 -1
-                while toLeft >= 0:
+                while toLeft > 0:
                     if (not lineEmpty(m,toLeft,y2,x2)) or (not lineEmpty(m,toLeft,y1,x1)):
                         break
                     elif columnEmpty(m,x1,x2+1,toLeft):
@@ -440,7 +468,7 @@ def canLink(m,x1,y1,x2,y2):
                 # ★**************
                 #
                 toRight = y1 + 1
-                while toRight <= 18:
+                while toRight < 18:
                     if (not lineEmpty(m,y1+1,toRight+1,x1)) or (not lineEmpty(m,y2+1,toRight+1,x2)):
                         break
                     elif columnEmpty(m,x1,x2+1,toRight):
