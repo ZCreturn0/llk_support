@@ -167,6 +167,7 @@ def columnEmpty(m,x1,x2,y):
 def canLink(m,x1,y1,x2,y2):
     t1 = m[x1][y1]
     t2 = m[x2][y2]
+    #在同一条线
     if inOneLine(t1,t2) or inOneColumn(t1,t2):
         #相邻
         if(t2.x - t1.x == 1 or t2.y - t1.y == 1):
@@ -184,15 +185,32 @@ def canLink(m,x1,y1,x2,y2):
                 return True
             else:
                 if inOneLine(t1,t2):
+                    #上->右->下
+                    #
+                    # *********
+                    # *       *
+                    # *       *
+                    # *       *
+                    # ★       ★
+                    #
                     cur = x1 - 1
-                    while cur >= 0:
-                        if columnEmpty(m,cur,x1,y1) and columnEmpty(m,cur,x2,y2) and lineEmpty(m,y1+1,y2,cur):
-                            return True
-                        elif not columnEmpty(m,cur,x1,y1) or not columnEmpty(m,cur,x2,y2):
+                    while cur > 0:
+                        if (not columnEmpty(m,cur,x1,y1)) or (not columnEmpty(m,cur,x2,y2)):
                             break
+                        elif lineEmpty(m,y1+1,y2,cur):
+                            return True
                         cur -= 1
+                    #下->右->上
+                    #
+                    # ★       ★
+                    # *        *
+                    # *        *
+                    # *        *
+                    # *        *
+                    # **********
+                    #
                     cur = x1 + 1
-                    while cur <= 10:
+                    while cur < 10:
                         if columnEmpty(m,x1+1,cur+1,y1) and columnEmpty(m,x2+1,cur+1,y2) and lineEmpty(m,y1+1,y2,cur):
                             return True
                         elif not columnEmpty(m,x1+1,cur+1,y1) or not columnEmpty(m,x2+1,cur+1,y2):
@@ -216,7 +234,7 @@ def canLink(m,x1,y1,x2,y2):
                 return False
     else:
         #不在同一条线上,t1偏左,t2偏右
-        #t1上,t2下
+        #t1左,t2右
         if t1.x < t2.x:
             #判断两条线相连
             #
@@ -319,7 +337,7 @@ def canLink(m,x1,y1,x2,y2):
                     elif columnEmpty(m,x1,x2,toLeft):
                         return True
                     toLeft -= 1
-        #t1下,t2上
+        #t1右,t2左
         elif t1.x > t2.x:
             #判断两条线相连
             #
@@ -335,11 +353,11 @@ def canLink(m,x1,y1,x2,y2):
             # *
             # ★
             #
-            if (lineEmpty(m,y1+1,y2,x1) and columnEmpty(m,x2+1,x1+1,y2)) or (columnEmpty(m,x1+1,x2,y1) and lineEmpty(m,y1,y2,x2)):
+            if (columnEmpty(m,x1+1,x2,y1) and lineEmpty(m,y2+1,y1+1,x2)) or (columnEmpty(m,x1,x2,y2)  and lineEmpty(m,y2,y1,x1)):
                 return True
             else:
                 #三线相连
-                #上->右->上
+                #下->左->下
                 #
                 #              ★
                 #              *
@@ -347,9 +365,88 @@ def canLink(m,x1,y1,x2,y2):
                 # *
                 # ★
                 #
-                for i in range(x2+1,x1):
-                    pass
-
+                for i in range(x1+1,x2):
+                    if not columnEmpty(m,x1+1,i+1,y1):
+                        break
+                    elif lineEmpty(m,y2,y1+1,i) and columnEmpty(m,i,x2,y2):
+                        return True
+                #右->上->右
+                #
+                #       ******★
+                #       *
+                #       *
+                #       *
+                # ★*****
+                #
+                for i in range(y2+1,y1):
+                    if not lineEmpty(m,y2+1,i+1,x2):
+                        break
+                    elif columnEmpty(m,x1,x2+1,i) and lineEmpty(m,i,y1,x1):
+                        return True
+                #上->右->下
+                #
+                # ************
+                # *          *
+                # *          *
+                # *          ★
+                # *
+                # *
+                # ★
+                #
+                toTop = x1-1
+                while toTop >= 0:
+                    if (not columnEmpty(m,toTop,x1,y1)) or (not columnEmpty(m,toTop,x2,y2)):
+                        break
+                    elif lineEmpty(m,y2,y1+1,toTop):
+                        return True
+                    toTop -= 1
+                #下->右->上
+                #
+                #             ★
+                #             *
+                #             *
+                #    ★       *
+                #    *        *
+                #    *        *
+                #    **********   
+                #       
+                toBottom = X2 - 1
+                while toBottom <= 10:
+                    if (not columnEmpty(m,x2+1,toBottom+1,y2)) or (not columnEmpty(m,x1+1,toBottom+1,y1)):
+                        break
+                    elif lineEmpty(m,y2,y1+1,toBottom):
+                        return True
+                    toBottom += 1
+                #左->上->右
+                #
+                # ***************★
+                # *
+                # *
+                # *****★
+                #
+                toLeft = y2 -1
+                while toLeft >= 0:
+                    if (not lineEmpty(m,toLeft,y2,x2)) or (not lineEmpty(m,toLeft,y1,x1)):
+                        break
+                    elif columnEmpty(m,x1,x2+1,toLeft):
+                        return True
+                    toLeft -= 1
+                #右->下->左
+                #
+                #          ★******
+                #                *
+                #                *
+                #                *
+                # ★**************
+                #
+                toRight = y1 + 1
+                while toRight <= 18:
+                    if (not lineEmpty(m,y1+1,toRight+1,x1)) or (not lineEmpty(m,y2+1,toRight+1,x2)):
+                        break
+                    elif columnEmpty(m,x1,x2+1,toRight):
+                        return True
+                    toRight += 1
+                
             
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
 # #返回(x1,y1,x2,y2)
