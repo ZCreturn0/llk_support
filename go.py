@@ -440,7 +440,7 @@ def canLink(m,x1,y1,x2,y2):
                 #    *        *
                 #    **********   
                 #       
-                toBottom = X2 - 1
+                toBottom = x2 - 1
                 while toBottom < 10:
                     if (not columnEmpty(m,x2+1,toBottom+1,y2)) or (not columnEmpty(m,x1+1,toBottom+1,y1)):
                         break
@@ -476,7 +476,44 @@ def canLink(m,x1,y1,x2,y2):
                     elif columnEmpty(m,x1,x2+1,toRight):
                         return True
                     toRight += 1
-                
+
+#逐个对比,传入待连接tubes,返回可连接tubes坐标
+def compareTubes(m,t):
+    x = -1
+    y = -1
+    for i in range(11):
+        for j in range(19):
+            if t.value == m[i][j].value:
+                linkable = False
+                if t.x < i:
+                    linkable = canLink(m,t.x,t.y,i,j)
+                elif t.x > i:
+                    linkable = canLink(m,i,j,t.x,t.y)
+                elif t.x == i:
+                    if t.y < j:
+                        linkable = canLink(m,t.x,t.y,i,j)
+                    elif t.y > j:
+                        linkable = canLink(m,i,j,t.x,t.y)
+                    elif t.y == j:
+                        continue
+                if linkable:
+                    x = i
+                    y = j
+                    return (x,j)
+    return (x,j)
+
+#连接并对比所有tubes
+def linkAllTubes(m):
+    for i in range(11):
+        for j in range(19):
+            if m[i][j].value != 0:
+                coor = compareTubes(m,m[i][j])
+                if coor[0] >=0 and coor[1] >= 0:
+                    print('(%s,%s)----(%s,%s)' % (i,j,coor[0],coor[1]))
+                    m[i][j].value = 0
+                    m[coor[0]][coor[1]].value = 0
+                    #模拟鼠标点击
+                    pass
             
 # hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
 # #返回(x1,y1,x2,y2)
@@ -534,12 +571,14 @@ for i in range(11):
     print('')
     gameMap.append(line)
 
+
+linkAllTubes(gameMap)
+
 print('Transform map in %s s' % (datetime.now() - start))
 
 
-# for line1 in gameMap:
-#     for item1 in line1:
-#         for 
+
+
 
 
 #print(calc_similar_by_obj(Image.open('./cut/0-0.jpg'),Image.open('./bg/bg.jpg')))
