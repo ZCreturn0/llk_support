@@ -45,6 +45,13 @@ bg = PictureValue(Image.open('./bg/bg.jpg'),currentValue)
 currentValue += 1
 imageValue.append(bg)
 
+#窗口左上角坐标
+winPos = Point(0,0)
+#鼠标点击间隔
+mouseClickInterval = 0.005
+#游戏区域开始坐标
+gameStartPos = Point(0,0)
+
 
 #装饰器,打印执行时长
 def log(text):
@@ -477,6 +484,16 @@ def canLink(m,x1,y1,x2,y2):
                         return True
                     toRight += 1
 
+#判断游戏是否结束
+def gameOver(m):
+    gameover = True
+    for i in range(11):
+        for j in range(19):
+            if m[i][j].value != 0:
+                gameover = False
+                return gameover
+    return gameover
+
 #逐个对比,传入待连接tubes,返回可连接tubes坐标
 def compareTubes(m,t):
     x = -1
@@ -502,83 +519,114 @@ def compareTubes(m,t):
                     return (x,j)
     return (x,j)
 
+#test:输出地图
+def printMap(m):
+    for i in range(11):
+        for j in range(19):
+            print("%2s" % (m[i][j].value),end="")
+    print('')
+
+#点击对应坐标
+def clickCoor(point):
+    global mouseClickInterval
+    global gameStartPos
+    time.sleep(mouseClickInterval)
+    windll.user32.SetCursorPos(gameStartPos.x+point.x,gameStartPos.y+point.y)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN|win32con.MOUSEEVENTF_LEFTUP, 0, 0)
+
+#已消除的方块
+linkedTubes = 0
 #连接并对比所有tubes
 def linkAllTubes(m):
+    global linkedTubes
     for i in range(11):
         for j in range(19):
             if m[i][j].value != 0:
                 coor = compareTubes(m,m[i][j])
                 if coor[0] >=0 and coor[1] >= 0:
+                    linkedTubes += 2
                     print('(%s,%s)----(%s,%s)' % (i,j,coor[0],coor[1]))
                     m[i][j].value = 0
                     m[coor[0]][coor[1]].value = 0
                     #模拟鼠标点击
-                    pass
+                    clickCoor(m[i][j].click_point)
+                    clickCoor(m[coor[0]][coor[1]].click_point)
+    #printMap(m)
+    print('linkedTubes:%s' % (linkedTubes))
+    #游戏未结束,继续对比,递归调用
+    if not gameOver(m):
+        linkAllTubes(m)
             
-# hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
-# #返回(x1,y1,x2,y2)
-# p = win32gui.GetWindowRect(hwnd)
-# print(p)
-
-#游戏起始坐标
-start_point = Point(14,181)
-#方块宽高
-tube_width = 31
-tube_height = 35
-
-# #对游戏窗口进行截图
-# im = ImageGrab.grab(p)
-# im.save('temp.jpg')
-
-# #裁剪游戏区,把每个方块与空白区裁剪出来,游戏总共11行19列
-# for i in range(11):
-#     for j in range(19):
-#         #当前方块起始,结束坐标
-#         sp = Point(start_point.x+j*tube_width,start_point.y+tube_height*i)
-#         ep = Point(sp.x + tube_width,sp.y + tube_height)
-#         t = Tube(sp,ep)
-#         #裁剪
-#         cropedIm = im.crop((t.s_point.x,t.s_point.y,t.e_point.x,t.e_point.y))
-#         #保存为     "行数-列数.jpg"
-#         cropedIm.save('.\/cut\/%s-%s.jpg' % (i,j))
 
 
+if __name__ == '__main__':
+    hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
+    #返回(x1,y1,x2,y2)
+    p = win32gui.GetWindowRect(hwnd)
+    winPos.x = p[0]
+    winPos.y = p[1]
 
+    #游戏起始坐标
+    start_point = Point(14,181)
+    #方块宽高
+    tube_width = 31
+    tube_height = 35
+    gameStartPos.x = winPos.x + start_point.x
+    gameStartPos.y = winPos.y + start_point.y
 
-gameMap = []
-start = datetime.now()
+    # #对游戏窗口进行截图
+    # im = ImageGrab.grab(p)
+    # im.save('temp.jpg')
 
-
-for i in range(11):
-    values = []
-    line = []
-    for j in range(19):
-        img = Image.open('./cut/%s-%s.jpg' % (i,j))
-        value = getValue(img)
-        values.append(value)
-        print('%2s' % (value),end="  ")
-        #起始坐标
-        s_px = start_point.x + j * tube_width;
-        s_py = start_point.y + i * tube_height;
-        #终止坐标
-        e_px = (start_point.x + tube_width) + j * tube_width;
-        e_py = (start_point.y + tube_height) + i * tube_height;
-        s_point = Point(s_px,s_py)
-        e_point = Point(e_px,e_py)
-        tube = Tube(s_point,e_point,getMidPoint(s_point,e_point),i,j,value)
-        # print(tube)
-        line.append(tube)
-    print('')
-    gameMap.append(line)
-
-
-linkAllTubes(gameMap)
-
-print('Transform map in %s s' % (datetime.now() - start))
+    # #裁剪游戏区,把每个方块与空白区裁剪出来,游戏总共11行19列
+    # for i in range(11):
+    #     for j in range(19):
+    #         #当前方块起始,结束坐标
+    #         sp = Point(start_point.x+j*tube_width,start_point.y+tube_height*i)
+    #         ep = Point(sp.x + tube_width,sp.y + tube_height)
+    #         t = Tube(sp,ep)
+    #         #裁剪
+    #         cropedIm = im.crop((t.s_point.x,t.s_point.y,t.e_point.x,t.e_point.y))
+    #         #保存为     "行数-列数.jpg"
+    #         cropedIm.save('.\/cut\/%s-%s.jpg' % (i,j))
 
 
 
 
+    gameMap = []
+    start = datetime.now()
 
 
-#print(calc_similar_by_obj(Image.open('./cut/0-0.jpg'),Image.open('./bg/bg.jpg')))
+    for i in range(11):
+        values = []
+        line = []
+        for j in range(19):
+            img = Image.open('./cut/%s-%s.jpg' % (i,j))
+            value = getValue(img)
+            values.append(value)
+            print('%2s' % (value),end="  ")
+            #起始坐标
+            s_px = start_point.x + j * tube_width;
+            s_py = start_point.y + i * tube_height;
+            #终止坐标
+            e_px = (start_point.x + tube_width) + j * tube_width;
+            e_py = (start_point.y + tube_height) + i * tube_height;
+            s_point = Point(s_px,s_py)
+            e_point = Point(e_px,e_py)
+            tube = Tube(s_point,e_point,getMidPoint(s_point,e_point),i,j,value)
+            # print(tube)
+            line.append(tube)
+        print('')
+        gameMap.append(line)
+
+
+    print('Transform map in %s s' % (datetime.now() - start))
+
+    linkAllTubes(gameMap)
+
+
+
+
+
+
+    #print(calc_similar_by_obj(Image.open('./cut/0-0.jpg'),Image.open('./bg/bg.jpg')))
