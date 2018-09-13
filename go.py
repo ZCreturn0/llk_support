@@ -7,11 +7,17 @@ import functools
 import math,operator
 import win32gui, win32ui, win32con, win32api
 
+from ctypes import *
 from functools import reduce
 from datetime import datetime
 from PIL import ImageGrab,Image
 from multiprocessing import Process,Manager
 
+__author__ = 'zc'
+__email__ = '237350543@qq.com'
+__descriptionEncode__ = 'base64'
+__description__ = 'JXU1MjJCJXU3NzBCJXU2M0NGJXU4RkYwJTJDJXU3NzBCJXU0RUUzJXU3ODAxJTIx'
+__github__ = 'https://github.com/ZCreturn0/llk_support'
 
 #坐标点
 class Point(object):
@@ -52,7 +58,6 @@ mouseClickInterval = 0.005
 #游戏区域开始坐标
 gameStartPos = Point(0,0)
 
-
 #装饰器,打印执行时长
 def log(text):
     def decoretor(func):
@@ -65,9 +70,7 @@ def log(text):
         return wrapper
     return decoretor
 
-
 #图片相似度begin
-
 #primary  256*256
 def make_regalur_image(img, size = (128, 128)):
 	return img.resize(size).convert('RGB')
@@ -76,13 +79,13 @@ def make_regalur_image(img, size = (128, 128)):
 def split_image(img, part_size = (32, 32)):
 	w, h = img.size
 	pw, ph = part_size
-#	assert w % pw == h % ph == 0
+    #assert w % pw == h % ph == 0
 	return [img.crop((i, j, i+pw, j+ph)).copy() \
 				for i in range(0, w, pw) \
 				for j in range(0, h, ph)]
 
 def hist_similar(lh, rh):
-#	assert len(lh) == len(rh)
+    #assert len(lh) == len(rh)
 	return sum(1 - (0 if l == r else float(abs(l - r))/max(l, r)) for l, r in zip(lh, rh))/len(lh)
 
 def calc_similar(li, ri):
@@ -531,7 +534,7 @@ def clickCoor(point):
     global mouseClickInterval
     global gameStartPos
     time.sleep(mouseClickInterval)
-    windll.user32.SetCursorPos(gameStartPos.x+point.x,gameStartPos.y+point.y)
+    windll.user32.SetCursorPos(int(gameStartPos.x+point.x),int(gameStartPos.y+point.y))
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN|win32con.MOUSEEVENTF_LEFTUP, 0, 0)
 
 #已消除的方块
@@ -539,11 +542,14 @@ linkedTubes = 0
 #连接并对比所有tubes
 def linkAllTubes(m):
     global linkedTubes
+    #这一轮是否消除
+    linkedThisTurn = False
     for i in range(11):
         for j in range(19):
             if m[i][j].value != 0:
                 coor = compareTubes(m,m[i][j])
                 if coor[0] >=0 and coor[1] >= 0:
+                    linkedThisTurn = True
                     linkedTubes += 2
                     print('(%s,%s)----(%s,%s)' % (i,j,coor[0],coor[1]))
                     m[i][j].value = 0
@@ -554,13 +560,16 @@ def linkAllTubes(m):
     #printMap(m)
     print('linkedTubes:%s' % (linkedTubes))
     #游戏未结束,继续对比,递归调用
+    #游戏为结束,且这一轮未消除任何方块,说明没有可配对的方块,系统会使用重新排列道具,需重新截屏,识别等,即调用main()函数
     if not gameOver(m):
-        linkAllTubes(m)
-            
+        if linkedThisTurn:
+            linkAllTubes(m)
+        else:
+            main()
 
-
-if __name__ == '__main__':
-    hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')  #QQ游戏 - 连连看角色版
+#开始运行
+def main():
+    hwnd = win32gui.FindWindow(None, 'QQ游戏 - 连连看角色版')
     #返回(x1,y1,x2,y2)
     p = win32gui.GetWindowRect(hwnd)
     winPos.x = p[0]
@@ -585,9 +594,8 @@ if __name__ == '__main__':
             #当前方块起始,结束坐标
             sp = Point(start_point.x+j*tube_width,start_point.y+tube_height*i)
             ep = Point(sp.x + tube_width,sp.y + tube_height)
-            t = Tube(sp,ep)
             #裁剪
-            cropedIm = im.crop((t.s_point.x,t.s_point.y,t.e_point.x,t.e_point.y))
+            cropedIm = im.crop((sp.x,sp.y,ep.x,ep.y))
             #保存为     "行数-列数.jpg"
             cropedIm.save('.\/cut\/%s-%s.jpg' % (i,j))
 
@@ -623,3 +631,6 @@ if __name__ == '__main__':
 
     #test:对比两张图片的相似度
     #print(calc_similar_by_obj(Image.open('./cut/0-0.jpg'),Image.open('./bg/bg.jpg')))
+            
+if __name__ == '__main__':
+    main()
