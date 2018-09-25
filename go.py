@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import random
 import threading
 import functools
 import math,operator
@@ -53,8 +54,9 @@ imageValue.append(bg)
 
 #窗口左上角坐标
 winPos = Point(0,0)
-#鼠标点击间隔
-mouseClickInterval = 0.005
+#鼠标点击间隔起始随机值
+mouseClickIntervalStart = 0.2
+mouseClickIntervalEnd = 0.7
 #游戏区域开始坐标
 gameStartPos = Point(0,0)
 
@@ -531,9 +533,8 @@ def printMap(m):
 
 #点击对应坐标
 def clickCoor(point):
-    global mouseClickInterval
-    global gameStartPos
-    time.sleep(mouseClickInterval)
+    global mouseClickIntervalStart,mouseClickIntervalEnd
+    time.sleep(random.uniform(mouseClickIntervalStart,mouseClickIntervalEnd))
     windll.user32.SetCursorPos(int(gameStartPos.x+point.x),int(gameStartPos.y+point.y))
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN|win32con.MOUSEEVENTF_LEFTUP, 0, 0)
 
@@ -581,8 +582,8 @@ def main():
     tube_width = 31
     tube_height = 35
     #游戏区域相对屏幕起始坐标
-    gameStartPos.x = winPos.x + start_point.x
-    gameStartPos.y = winPos.y + start_point.y
+    gameStartPos.x = winPos.x
+    gameStartPos.y = winPos.y
 
     #对游戏窗口进行截图
     im = ImageGrab.grab(p)
